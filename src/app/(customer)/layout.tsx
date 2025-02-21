@@ -1,7 +1,7 @@
 import { Nav, NavLink } from "@/components/navigation/Nav";
 import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { ShoppingCart } from "lucide-react";
-
+import { getCategories } from "@/helpers/CRUD/global";
 export const dynamic = "force-dynamic";
 
 export default function Layout({
@@ -28,13 +28,16 @@ export default function Layout({
   );
 }
 
-function NavLinks() {
+async function NavLinks() {
+  const categories = await getCategories({ resultColumns: "name, id, label" });
   return (
     <>
       <NavLink href="/">Home</NavLink>
-      <NavLink href="/products">Headphones</NavLink>
-      <NavLink href="/orders">Speakers</NavLink>
-      <NavLink href="/orders">Earphones</NavLink>
+      {categories.map((category) => (
+        <NavLink href={`/products/${category.name}`} key={category.id}>
+          {category.label}
+        </NavLink>
+      ))}
     </>
   );
 }
