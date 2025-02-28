@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 
 const manrope = Manrope({
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -19,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${manrope.className} antialiased font-sans text-body`}>
+      <body className={`${manrope.className} antialiased text-body`}>
         <Providers>{children}</Providers>
       </body>
     </html>

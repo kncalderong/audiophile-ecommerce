@@ -8,9 +8,12 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    container: {
+      center: true,
+    },
     extend: {
       fontSize: {
-        body: ["15px", { lineHeight: "25px" }],
+        body: ["15px", { letterSpacing: "2.5px" }],
         h1: [
           "56px",
           { lineHeight: "58px", letterSpacing: "2px", fontWeight: 600 },

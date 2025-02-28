@@ -47,7 +47,7 @@ const LeftModal: React.FC<LeftModalProps> = ({
               className="grid place-items-center w-[35px] h-[35px] rounded-md bg-gray-100 md:w-[40px] md:h-[40px]"
               onClick={handleClose}
             >
-              <X className="w-8 h-8" />
+              <X className="w-6 h-6" />
             </button>
           </div>
           {children}

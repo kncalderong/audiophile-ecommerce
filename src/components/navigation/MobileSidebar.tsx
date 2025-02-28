@@ -13,7 +13,7 @@ const MobileSidebar = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="lg:hidden">
-      <button onClick={toggleSidebar}>
+      <button className="flex items-center" onClick={toggleSidebar}>
         <Menu className="w-6 h-6" />
       </button>
       <LeftModal

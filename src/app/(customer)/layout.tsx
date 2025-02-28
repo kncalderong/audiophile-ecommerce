@@ -2,6 +2,7 @@ import { Nav, NavLink } from "@/components/navigation/Nav";
 import MobileSidebar from "@/components/navigation/MobileSidebar";
 import { ShoppingCart } from "lucide-react";
 import { getCategories } from "@/helpers/CRUD/global";
+import Image from "next/image";
 export const dynamic = "force-dynamic";
 
 export default function Layout({
@@ -15,7 +16,16 @@ export default function Layout({
         <MobileSidebar>
           <NavLinks />
         </MobileSidebar>
-        <p>audiophile</p>
+        <div className="flex justify-center items-center md:justify-start md:pl-10 lg:pl-0 grow lg:grow-0">
+          <div className="relative w-[145px] h-[25px]">
+            <Image
+              alt="audiphile-logo"
+              src={"/audiophile.svg"}
+              fill
+              style={{ objectFit: "contain" }}
+            />
+          </div>
+        </div>
         <div className="hidden lg:flex">
           <NavLinks />
         </div>
