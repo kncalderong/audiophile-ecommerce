@@ -16,7 +16,7 @@ import {
 import { MoreVertical } from "lucide-react";
 import { getAllUsers } from "@/helpers/CRUD/user";
 import { UserWithOrders } from "@/types/user";
-import { DeleteDropDownItem } from "./_components/DeleteDropdown";
+import { DeleteUserDropDownItem } from "./_components/DeleteUserDropdown";
 
 export default function UsersPage() {
   return (
@@ -63,7 +63,7 @@ async function UsersTable() {
                   <span className="sr-only">Actions</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DeleteDropDownItem id={user.id} />
+                  <DeleteUserDropDownItem id={user.id} />
                 </DropdownMenuContent>
               </DropdownMenu>
             </TableCell>
