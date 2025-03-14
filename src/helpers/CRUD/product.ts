@@ -21,6 +21,26 @@ export const updateProduct = async (
   if (error) throw new Error(error.message);
 };
 
+export const getProductById = async ({
+  id,
+  resultColumns = "*",
+}: {
+  id: string;
+  resultColumns: string;
+}): Promise<Product | null> => {
+  const supabase = await createClient();
+  const { data, error } = (await supabase
+    .from("Product")
+    .select(resultColumns)
+    .eq("id", id)) as {
+    data: Product[] | null;
+    error: PostgrestError | null;
+  };
+
+  if (error) throw new Error(error.message);
+  return data?.[0] || null;
+};
+
 export const createProduct = async (data: {
   [key: string]: unknown;
 }): Promise<Product | null> => {
