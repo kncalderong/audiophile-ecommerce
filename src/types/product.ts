@@ -1,3 +1,3 @@
-import { Product } from "@prisma/client";
+import { Order, Product } from "@prisma/client";
 
-export type ProductWithOrders = Product & { Order: { id: string }[] };
+export type ProductWithOrders = Product & { Order: Order[] };
