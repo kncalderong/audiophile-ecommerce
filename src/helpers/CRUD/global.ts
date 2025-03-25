@@ -30,7 +30,7 @@ export const getSalesData = async (): Promise<{
 }> => {
   const supabase = await createClient();
   const { data, error } = (await supabase
-    .from("order")
+    .from("Order")
     .select("pricePaidInCents, User (id)")) as {
     data: { pricePaidInCents: number; User: User }[];
     error: PostgrestError | null;
