@@ -8,15 +8,31 @@ import { formatCurrency } from "@/lib/formatters";
 import { useActionState, useState } from "react";
 import { addProduct, updateProductAction } from "../../_actions/products";
 import { useFormStatus } from "react-dom";
-import { Product } from "@prisma/client";
+import { Category, Product } from "@prisma/client";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export function ProductForm({ product }: { product?: Product | null }) {
+export function ProductForm({
+  product,
+  categories,
+}: {
+  product?: Product | null;
+  categories: Category[] | null;
+}) {
   const [error, action] = useActionState(
     product == null ? addProduct : updateProductAction.bind(null, product.id),
     {}
   );
-  const [priceInCents, setPriceInCents] = useState<number | undefined>(
-    product?.priceInCents
+
+  const [priceInCents, setPriceInCents] = useState<string | number>(
+    product?.priceInCents?.toString() || ""
   );
 
   return (
@@ -40,14 +56,33 @@ export function ProductForm({ product }: { product?: Product | null }) {
           name="priceInCents"
           required
           value={priceInCents}
-          onChange={(e) => setPriceInCents(Number(e.target.value) || undefined)}
+          onChange={(e) => setPriceInCents(+e.target.value || "")}
         />
         <div className="text-muted-foreground">
-          {formatCurrency((priceInCents || 0) / 100)}
+          {formatCurrency((+priceInCents || 0) / 100)}
         </div>
         {error.priceInCents && (
           <div className="text-destructive">{error.priceInCents}</div>
         )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="name">Category</Label>
+        <Select name="category" required>
+          <SelectTrigger className="">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Categories</SelectLabel>
+              {categories?.map((category) => (
+                <SelectItem key={category.id} value={`${category.id}`}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        {error.category && <div className="text-destructive">{error.name}</div>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
@@ -85,6 +120,7 @@ export function ProductForm({ product }: { product?: Product | null }) {
           {error.image && <div className="text-destructive">{error.image}</div>}
         </div>
       )}
+
       <SubmitButton />
     </form>
   );
