@@ -47,10 +47,11 @@ export const createProduct = async (data: {
   const supabase = await createClient();
   const { data: newProduct, error } = await supabase
     .from("Product")
-    .insert([data]);
+    .insert([data])
+    .select();
 
   if (error) throw new Error(error.message);
-  return newProduct;
+  return newProduct?.[0] || null;
 };
 
 export const getAllProducts = async ({
@@ -76,7 +77,7 @@ export const getNextImageOrder = async (productId: string) => {
   const { data, error } = await supabase
     .from("ProductImage")
     .select("order")
-    .eq("product_id", productId)
+    .eq("productId", productId)
     .order("order", { ascending: false }) // Get highest order first
     .limit(1);
 
