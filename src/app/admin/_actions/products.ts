@@ -25,11 +25,16 @@ const addSchema = z.object({
   category: z.string().min(1),
 });
 
-export async function addProduct(prevState: unknown, formData: FormData) {
+export async function addProduct(
+  prevState:
+    | { fieldErrors?: Record<string, string[]>; serverError?: string }
+    | undefined,
+  formData: FormData
+) {
   const result = addSchema.safeParse(Object.fromEntries(formData.entries()));
 
-  if (result.success === false) {
-    return result.error.formErrors.fieldErrors;
+  if (!result.success) {
+    return { fieldErrors: result.error.formErrors.fieldErrors };
   }
 
   const data = result.data;
@@ -38,33 +43,40 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-  const newProduct = await createProduct({
-    id: uuidv4(),
-    name: data.name,
-    description: data.description,
-    priceInCents: data.priceInCents,
-    slug,
-    features: data.features,
-    categoryId: data.category,
-  });
+  try {
+    const newProduct = await createProduct({
+      id: uuidv4(),
+      name: data.name,
+      description: data.description,
+      priceInCents: data.priceInCents,
+      slug,
+      features: data.features,
+      categoryId: data.category,
+    });
 
-  if (newProduct) {
+    if (!newProduct) {
+      return { serverError: "Failed to create product." };
+    }
+
     await addProductImage(newProduct.id, data.image, "DESKTOP");
+    revalidatePath("/");
+    revalidatePath("/products");
+    redirect("/admin/products");
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return { serverError: `An unexpected error occurred: ${error}` };
   }
-
-  revalidatePath("/");
-  revalidatePath("/products");
-  redirect("/admin/products");
 }
-
 export async function updateProductAction(
   productId: string,
-  prevState: unknown,
+  prevState:
+    | { fieldErrors?: Record<string, string[]>; serverError?: string }
+    | undefined,
   formData: FormData
 ) {
   const result = addSchema.safeParse(Object.fromEntries(formData.entries()));
   if (result.success === false) {
-    return result.error.formErrors.fieldErrors;
+    return { fieldErrors: result.error.formErrors.fieldErrors };
   }
 
   const data = result.data;
@@ -73,17 +85,22 @@ export async function updateProductAction(
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-  await updateProduct(productId, {
-    name: data.name,
-    description: data.description,
-    priceInCents: data.priceInCents,
-    slug,
-    features: data.features,
-  });
+  try {
+    await updateProduct(productId, {
+      name: data.name,
+      description: data.description,
+      priceInCents: data.priceInCents,
+      slug,
+      features: data.features,
+    });
 
-  revalidatePath("/");
-  revalidatePath("/products");
-  redirect("/admin/products");
+    revalidatePath("/");
+    revalidatePath("/products");
+    redirect("/admin/products");
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return { serverError: `An unexpected error occurred: ${error}` };
+  }
 }
 
 export async function deleteProductAction(id: string) {

@@ -26,7 +26,10 @@ export function ProductForm({
   product?: Product | null;
   categories: Category[] | null;
 }) {
-  const [error, action] = useActionState(
+  const [error, action] = useActionState<
+    { fieldErrors?: Record<string, string[]>; serverError?: string },
+    FormData
+  >(
     product == null ? addProduct : updateProductAction.bind(null, product.id),
     {}
   );
@@ -46,7 +49,9 @@ export function ProductForm({
           required
           defaultValue={product?.name || ""}
         />
-        {error.name && <div className="text-destructive">{error.name}</div>}
+        {error?.fieldErrors?.name && (
+          <div className="text-destructive">{error?.fieldErrors?.name}</div>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="priceInCents">Price In Cents</Label>
@@ -61,8 +66,10 @@ export function ProductForm({
         <div className="text-muted-foreground">
           {formatCurrency((+priceInCents || 0) / 100)}
         </div>
-        {error.priceInCents && (
-          <div className="text-destructive">{error.priceInCents}</div>
+        {error?.fieldErrors?.priceInCents && (
+          <div className="text-destructive">
+            {error?.fieldErrors?.priceInCents}
+          </div>
         )}
       </div>
       <div className="space-y-2">
@@ -82,7 +89,9 @@ export function ProductForm({
             </SelectGroup>
           </SelectContent>
         </Select>
-        {error.category && <div className="text-destructive">{error.name}</div>}
+        {error?.fieldErrors?.category && (
+          <div className="text-destructive">{error?.fieldErrors?.category}</div>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
@@ -92,8 +101,10 @@ export function ProductForm({
           required
           defaultValue={product?.description}
         />
-        {error.description && (
-          <div className="text-destructive">{error.description}</div>
+        {error?.fieldErrors?.description && (
+          <div className="text-destructive">
+            {error?.fieldErrors?.description}
+          </div>
         )}
       </div>
       <div className="space-y-2">
@@ -104,8 +115,8 @@ export function ProductForm({
           required
           defaultValue={product?.features}
         />
-        {error.features && (
-          <div className="text-destructive">{error.features}</div>
+        {error?.fieldErrors?.features && (
+          <div className="text-destructive">{error?.fieldErrors?.features}</div>
         )}
       </div>
       {!product && (
@@ -117,8 +128,13 @@ export function ProductForm({
             name="image"
             required={product == null}
           />
-          {error.image && <div className="text-destructive">{error.image}</div>}
+          {error?.fieldErrors?.image && (
+            <div className="text-destructive">{error?.fieldErrors?.image}</div>
+          )}
         </div>
+      )}
+      {error?.serverError && (
+        <div className="text-destructive">{error.serverError}</div>
       )}
 
       <SubmitButton />
