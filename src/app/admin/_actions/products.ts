@@ -61,11 +61,11 @@ export async function addProduct(
     await addProductImage(newProduct.id, data.image, "DESKTOP");
     revalidatePath("/");
     revalidatePath("/products");
-    redirect("/admin/products");
   } catch (error) {
     console.error("Error creating product:", error);
     return { serverError: `An unexpected error occurred: ${error}` };
   }
+  redirect("/admin/products");
 }
 export async function updateProductAction(
   productId: string,

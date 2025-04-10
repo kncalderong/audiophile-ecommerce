@@ -103,7 +103,7 @@ export const addProductImage = async (
     throw new Error(storageError.message || "Failed to upload image");
   }
 
-  const imageUrl = `https://${process.env.SUPABASE_URL}/storage/v1/object/public/product-images/${data.path}`;
+  const imageUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/product-images/${data.path}`;
 
   const { error } = await supabase
     .from("ProductImage")
