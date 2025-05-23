@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
-import { useActionState, useState } from "react";
-import { addProduct, updateProductAction } from "../../_actions/products";
+import { useRef, useState } from "react";
+import { addProduct } from "../../_actions/products";
 import { useFormStatus } from "react-dom";
 import { Category, Product } from "@prisma/client";
 import {
@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import AddImage from "./AddImage";
+import { ImageBlock } from "@/types/product";
 
 export function ProductForm({
   product,
@@ -26,20 +28,33 @@ export function ProductForm({
   product?: Product | null;
   categories: Category[] | null;
 }) {
-  const [error, action] = useActionState<
-    { fieldErrors?: Record<string, string[]>; serverError?: string },
-    FormData
-  >(
-    product == null ? addProduct : updateProductAction.bind(null, product.id),
-    {}
-  );
+  const [formError, setFormError] = useState<{
+    fieldErrors?: Record<string, string[]>;
+    serverError?: string;
+  }>({});
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [priceInCents, setPriceInCents] = useState<string | number>(
     product?.priceInCents?.toString() || ""
   );
+  const [productImages, setProductImages] = useState<ImageBlock[]>([]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = formRef.current;
+    if (!form) return;
+    const formData = new FormData(form);
+    const result = await addProduct(formData, productImages);
+    if (result) {
+      setFormError(result);
+      return;
+    }
+    form.reset();
+    setProductImages([]);
+  };
 
   return (
-    <form action={action} className="space-y-8">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input
@@ -49,8 +64,8 @@ export function ProductForm({
           required
           defaultValue={product?.name || ""}
         />
-        {error?.fieldErrors?.name && (
-          <div className="text-destructive">{error?.fieldErrors?.name}</div>
+        {formError?.fieldErrors?.name && (
+          <div className="text-destructive">{formError?.fieldErrors?.name}</div>
         )}
       </div>
       <div className="space-y-2">
@@ -66,9 +81,9 @@ export function ProductForm({
         <div className="text-muted-foreground">
           {formatCurrency((+priceInCents || 0) / 100)}
         </div>
-        {error?.fieldErrors?.priceInCents && (
+        {formError?.fieldErrors?.priceInCents && (
           <div className="text-destructive">
-            {error?.fieldErrors?.priceInCents}
+            {formError?.fieldErrors?.priceInCents}
           </div>
         )}
       </div>
@@ -89,8 +104,10 @@ export function ProductForm({
             </SelectGroup>
           </SelectContent>
         </Select>
-        {error?.fieldErrors?.category && (
-          <div className="text-destructive">{error?.fieldErrors?.category}</div>
+        {formError?.fieldErrors?.category && (
+          <div className="text-destructive">
+            {formError?.fieldErrors?.category}
+          </div>
         )}
       </div>
       <div className="space-y-2">
@@ -101,9 +118,9 @@ export function ProductForm({
           required
           defaultValue={product?.description}
         />
-        {error?.fieldErrors?.description && (
+        {formError?.fieldErrors?.description && (
           <div className="text-destructive">
-            {error?.fieldErrors?.description}
+            {formError?.fieldErrors?.description}
           </div>
         )}
       </div>
@@ -115,28 +132,21 @@ export function ProductForm({
           required
           defaultValue={product?.features}
         />
-        {error?.fieldErrors?.features && (
-          <div className="text-destructive">{error?.fieldErrors?.features}</div>
+        {formError?.fieldErrors?.features && (
+          <div className="text-destructive">
+            {formError?.fieldErrors?.features}
+          </div>
         )}
       </div>
       {!product && (
-        <div className="space-y-2">
-          <Label htmlFor="image">Image</Label>
-          <Input
-            type="file"
-            id="image"
-            name="image"
-            required={product == null}
-          />
-          {error?.fieldErrors?.image && (
-            <div className="text-destructive">{error?.fieldErrors?.image}</div>
-          )}
-        </div>
+        <AddImage
+          productImages={productImages}
+          setProductImages={setProductImages}
+        />
       )}
-      {error?.serverError && (
-        <div className="text-destructive">{error.serverError}</div>
+      {formError?.serverError && (
+        <div className="text-destructive">{formError.serverError}</div>
       )}
-
       <SubmitButton />
     </form>
   );

@@ -3,7 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { DeviceType, Product } from "@prisma/client";
 import { PostgrestError } from "@supabase/supabase-js";
-import { v4 as uuidv4 } from "uuid";
 
 export const deleteProduct = async (id: string) => {
   const supabase = await createClient();
@@ -73,31 +72,17 @@ export const getAllProducts = async ({
   return data;
 };
 
-export const getNextImageOrder = async (productId: string) => {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("ProductImage")
-    .select("order")
-    .eq("productId", productId)
-    .order("order", { ascending: false }) // Get highest order first
-    .limit(1);
-
-  if (error) throw new Error(error.message);
-
-  return data?.length ? data[0].order + 1 : 1; // If no images, start from 1
-};
-
 export const addProductImage = async (
   productId: string,
   file: File,
-  deviceType: DeviceType
+  deviceType: DeviceType,
+  order: number
 ) => {
   const supabase = await createClient();
-  const nextOrder = await getNextImageOrder(productId); // Auto-assign order
 
   const { data, error: storageError } = await supabase.storage
     .from("product-images")
-    .upload(`products/${productId}/${file.name}`, file);
+    .upload(`products/${productId}/${deviceType}/${file.name}`, file);
 
   if (storageError || !data) {
     throw new Error(storageError.message || "Failed to upload image");
@@ -107,9 +92,7 @@ export const addProductImage = async (
 
   const { error } = await supabase
     .from("ProductImage")
-    .insert([
-      { productId, imageUrl, order: nextOrder, deviceType, id: uuidv4() },
-    ]);
+    .insert([{ productId, imageUrl, order, deviceType }]);
 
   if (error) {
     throw new Error(error.message || "Failed to add product image");
