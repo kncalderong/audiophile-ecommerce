@@ -14,7 +14,7 @@ import { z } from "zod";
 
 const fileSchema = z.instanceof(File, { message: "Required" });
 const imageSchema = fileSchema.refine(
-  (file) => file.size === 0 || file.type.startsWith("image/")
+  (file) => file.size !== 0 || file.type.startsWith("image/")
 );
 
 const addSchema = z.object({
@@ -23,26 +23,32 @@ const addSchema = z.object({
   features: z.string().min(1),
   priceInCents: z.coerce.number().int().min(1),
   category: z.string().min(1),
-  productImages: z.array(
-    z.object({
-      MOBILE: imageSchema,
-      TABLET: imageSchema,
-      DESKTOP: imageSchema,
-    })
-  ),
 });
+
+const imagesSchema = z.array(
+  z.object({
+    MOBILE: imageSchema,
+    TABLET: imageSchema,
+    DESKTOP: imageSchema,
+  })
+);
 
 export async function addProduct(
   formData: FormData,
   productImages: ImageBlock[]
 ) {
-  const result = addSchema.safeParse({
-    ...Object.fromEntries(formData.entries()),
-    productImages,
-  });
+  const result = addSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!result.success) {
     return { fieldErrors: result.error.formErrors.fieldErrors };
+  }
+
+  const imagesResult = imagesSchema.safeParse(productImages);
+
+  if (!imagesResult.success) {
+    return {
+      serverError: "Invalid image data.",
+    };
   }
 
   const data = result.data;
