@@ -6,9 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
 import { useRef, useState } from "react";
-import { addProduct } from "../../_actions/products";
+import { addProduct, updateProductAction } from "../../_actions/products";
 import { useFormStatus } from "react-dom";
-import { Category, Product } from "@prisma/client";
+import { Category } from "@prisma/client";
 import {
   Select,
   SelectContent,
@@ -19,13 +19,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import AddImage from "./AddImage";
-import { ImageBlock } from "@/types/product";
+import { ImageBlock, ProductWithImages } from "@/types/product";
 
 export function ProductForm({
   product,
   categories,
 }: {
-  product?: Product | null;
+  product?: ProductWithImages | null;
   categories: Category[] | null;
 }) {
   const [formError, setFormError] = useState<{
@@ -44,7 +44,10 @@ export function ProductForm({
     const form = formRef.current;
     if (!form) return;
     const formData = new FormData(form);
-    const result = await addProduct(formData, productImages);
+    const result =
+      product == null
+        ? await addProduct(formData, productImages)
+        : await updateProductAction(product.id, formData);
     if (result) {
       setFormError(result);
       return;
@@ -89,7 +92,11 @@ export function ProductForm({
       </div>
       <div className="space-y-2">
         <Label htmlFor="name">Category</Label>
-        <Select name="category" required>
+        <Select
+          name="category"
+          required
+          defaultValue={`${product?.categoryId}`}
+        >
           <SelectTrigger className="">
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>

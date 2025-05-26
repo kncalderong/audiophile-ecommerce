@@ -90,9 +90,6 @@ export async function addProduct(
 }
 export async function updateProductAction(
   productId: string,
-  prevState:
-    | { fieldErrors?: Record<string, string[]>; serverError?: string }
-    | undefined,
   formData: FormData
 ) {
   const result = addSchema.safeParse(Object.fromEntries(formData.entries()));
@@ -117,11 +114,11 @@ export async function updateProductAction(
 
     revalidatePath("/");
     revalidatePath("/products");
-    redirect("/admin/products");
   } catch (error) {
     console.error("Error updating product:", error);
     return { serverError: `An unexpected error occurred: ${error}` };
   }
+  redirect("/admin/products");
 }
 
 export async function deleteProductAction(id: string) {
