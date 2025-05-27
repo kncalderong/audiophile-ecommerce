@@ -26,6 +26,7 @@ export default async function EditProductPage({
         product={product as ProductWithImages}
         categories={categories || null}
       />
+      <h4>Product Images</h4>
       <EditImages product={product as ProductWithImages} />
     </section>
   );

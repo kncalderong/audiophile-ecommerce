@@ -28,9 +28,13 @@ const EditImages = ({ product }: { product: ProductWithImages }) => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  <div className=" bg-store-gray-strong text-white rounded-lg cursor-pointer p-1">
+                  <Link
+                    href={`./edit/images/${image.id}`}
+                    className=" bg-store-gray-strong text-white rounded-lg cursor-pointer p-1 block"
+                    scroll={false}
+                  >
                     <PencilIcon className="h-6 w-6" />
-                  </div>
+                  </Link>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Edit</p>

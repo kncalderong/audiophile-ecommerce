@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { DeviceType, Product } from "@prisma/client";
+import { DeviceType, Product, ProductImage } from "@prisma/client";
 import { PostgrestError } from "@supabase/supabase-js";
 
 export const deleteProduct = async (id: string) => {
@@ -26,7 +26,7 @@ export const getProductById = async ({
   resultColumns = "*",
 }: {
   id: string;
-  resultColumns: string;
+  resultColumns?: string;
 }): Promise<Product | null> => {
   const supabase = await createClient();
   const { data, error } = (await supabase
@@ -39,6 +39,28 @@ export const getProductById = async ({
 
   if (error) throw new Error(error.message);
   return data?.[0] || null;
+};
+
+export const getImageById = async ({
+  id,
+  resultColumns = "*",
+}: {
+  id: string;
+  resultColumns?: string;
+}): Promise<ProductImage | null> => {
+  const supabase = await createClient();
+  const {
+    data,
+    error,
+  }: { data: ProductImage | null; error: PostgrestError | null } =
+    await supabase
+      .from("ProductImage")
+      .select(resultColumns)
+      .eq("id", id)
+      .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data || null;
 };
 
 export const createProduct = async (data: {
