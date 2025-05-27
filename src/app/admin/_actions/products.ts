@@ -6,13 +6,15 @@ import {
   deleteProduct,
   updateProduct,
 } from "@/helpers/CRUD/product";
+import { ImageBlock } from "@/types/product";
+import { DeviceType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
 const fileSchema = z.instanceof(File, { message: "Required" });
 const imageSchema = fileSchema.refine(
-  (file) => file.size === 0 || file.type.startsWith("image/")
+  (file) => file.size !== 0 || file.type.startsWith("image/")
 );
 
 const addSchema = z.object({
@@ -20,13 +22,33 @@ const addSchema = z.object({
   description: z.string().min(1),
   features: z.string().min(1),
   priceInCents: z.coerce.number().int().min(1),
-  image: imageSchema.refine((file) => file.size > 0, "Required"),
+  category: z.string().min(1),
 });
 
-export async function addProduct(prevState: unknown, formData: FormData) {
+const imagesSchema = z.array(
+  z.object({
+    MOBILE: imageSchema,
+    TABLET: imageSchema,
+    DESKTOP: imageSchema,
+  })
+);
+
+export async function addProduct(
+  formData: FormData,
+  productImages: ImageBlock[]
+) {
   const result = addSchema.safeParse(Object.fromEntries(formData.entries()));
-  if (result.success === false) {
-    return result.error.formErrors.fieldErrors;
+
+  if (!result.success) {
+    return { fieldErrors: result.error.formErrors.fieldErrors };
+  }
+
+  const imagesResult = imagesSchema.safeParse(productImages);
+
+  if (!imagesResult.success) {
+    return {
+      serverError: "Invalid image data.",
+    };
   }
 
   const data = result.data;
@@ -35,30 +57,44 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-  const newProduct = await createProduct({
-    name: data.name,
-    description: data.description,
-    priceInCents: data.priceInCents,
-    slug,
-    features: data.features,
-  });
-  if (newProduct) {
-    await addProductImage(newProduct.id, data.image, "DESKTOP");
-  }
+  try {
+    const newProduct = await createProduct({
+      name: data.name,
+      description: data.description,
+      priceInCents: data.priceInCents,
+      slug,
+      features: data.features,
+      categoryId: data.category,
+    });
 
-  revalidatePath("/");
-  revalidatePath("/products");
+    if (!newProduct) {
+      return { serverError: "Failed to create product." };
+    }
+
+    for (let i = 0; i < productImages.length; i++) {
+      const imageBlock = productImages[i];
+      for (const deviceType of Object.values(DeviceType)) {
+        const file = imageBlock[deviceType];
+        if (!file) continue;
+        await addProductImage(newProduct.id, file, deviceType, i);
+      }
+    }
+
+    revalidatePath("/");
+    revalidatePath("/products");
+  } catch (error) {
+    console.error("Error creating product:", error);
+    return { serverError: `An unexpected error occurred: ${error}` };
+  }
   redirect("/admin/products");
 }
-
 export async function updateProductAction(
   productId: string,
-  prevState: unknown,
   formData: FormData
 ) {
   const result = addSchema.safeParse(Object.fromEntries(formData.entries()));
   if (result.success === false) {
-    return result.error.formErrors.fieldErrors;
+    return { fieldErrors: result.error.formErrors.fieldErrors };
   }
 
   const data = result.data;
@@ -67,16 +103,21 @@ export async function updateProductAction(
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-  await updateProduct(productId, {
-    name: data.name,
-    description: data.description,
-    priceInCents: data.priceInCents,
-    slug,
-    features: data.features,
-  });
+  try {
+    await updateProduct(productId, {
+      name: data.name,
+      description: data.description,
+      priceInCents: data.priceInCents,
+      slug,
+      features: data.features,
+    });
 
-  revalidatePath("/");
-  revalidatePath("/products");
+    revalidatePath("/");
+    revalidatePath("/products");
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return { serverError: `An unexpected error occurred: ${error}` };
+  }
   redirect("/admin/products");
 }
 

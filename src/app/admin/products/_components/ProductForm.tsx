@@ -5,22 +5,59 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency } from "@/lib/formatters";
-import { useActionState, useState } from "react";
+import { useRef, useState } from "react";
 import { addProduct, updateProductAction } from "../../_actions/products";
 import { useFormStatus } from "react-dom";
-import { Product } from "@prisma/client";
+import { Category } from "@prisma/client";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import AddImage from "./AddImage";
+import { ImageBlock, ProductWithImages } from "@/types/product";
 
-export function ProductForm({ product }: { product?: Product | null }) {
-  const [error, action] = useActionState(
-    product == null ? addProduct : updateProductAction.bind(null, product.id),
-    {}
+export function ProductForm({
+  product,
+  categories,
+}: {
+  product?: ProductWithImages | null;
+  categories: Category[] | null;
+}) {
+  const [formError, setFormError] = useState<{
+    fieldErrors?: Record<string, string[]>;
+    serverError?: string;
+  }>({});
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const [priceInCents, setPriceInCents] = useState<string | number>(
+    product?.priceInCents?.toString() || ""
   );
-  const [priceInCents, setPriceInCents] = useState<number | undefined>(
-    product?.priceInCents
-  );
+  const [productImages, setProductImages] = useState<ImageBlock[]>([]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = formRef.current;
+    if (!form) return;
+    const formData = new FormData(form);
+    const result =
+      product == null
+        ? await addProduct(formData, productImages)
+        : await updateProductAction(product.id, formData);
+    if (result) {
+      setFormError(result);
+      return;
+    }
+    form.reset();
+    setProductImages([]);
+  };
 
   return (
-    <form action={action} className="space-y-8">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input
@@ -30,7 +67,9 @@ export function ProductForm({ product }: { product?: Product | null }) {
           required
           defaultValue={product?.name || ""}
         />
-        {error.name && <div className="text-destructive">{error.name}</div>}
+        {formError?.fieldErrors?.name && (
+          <div className="text-destructive">{formError?.fieldErrors?.name}</div>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="priceInCents">Price In Cents</Label>
@@ -40,13 +79,42 @@ export function ProductForm({ product }: { product?: Product | null }) {
           name="priceInCents"
           required
           value={priceInCents}
-          onChange={(e) => setPriceInCents(Number(e.target.value) || undefined)}
+          onChange={(e) => setPriceInCents(+e.target.value || "")}
         />
         <div className="text-muted-foreground">
-          {formatCurrency((priceInCents || 0) / 100)}
+          {formatCurrency((+priceInCents || 0) / 100)}
         </div>
-        {error.priceInCents && (
-          <div className="text-destructive">{error.priceInCents}</div>
+        {formError?.fieldErrors?.priceInCents && (
+          <div className="text-destructive">
+            {formError?.fieldErrors?.priceInCents}
+          </div>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="name">Category</Label>
+        <Select
+          name="category"
+          required
+          defaultValue={`${product?.categoryId}`}
+        >
+          <SelectTrigger className="">
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Categories</SelectLabel>
+              {categories?.map((category) => (
+                <SelectItem key={category.id} value={`${category.id}`}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        {formError?.fieldErrors?.category && (
+          <div className="text-destructive">
+            {formError?.fieldErrors?.category}
+          </div>
         )}
       </div>
       <div className="space-y-2">
@@ -57,8 +125,10 @@ export function ProductForm({ product }: { product?: Product | null }) {
           required
           defaultValue={product?.description}
         />
-        {error.description && (
-          <div className="text-destructive">{error.description}</div>
+        {formError?.fieldErrors?.description && (
+          <div className="text-destructive">
+            {formError?.fieldErrors?.description}
+          </div>
         )}
       </div>
       <div className="space-y-2">
@@ -69,21 +139,20 @@ export function ProductForm({ product }: { product?: Product | null }) {
           required
           defaultValue={product?.features}
         />
-        {error.features && (
-          <div className="text-destructive">{error.features}</div>
+        {formError?.fieldErrors?.features && (
+          <div className="text-destructive">
+            {formError?.fieldErrors?.features}
+          </div>
         )}
       </div>
       {!product && (
-        <div className="space-y-2">
-          <Label htmlFor="image">Image</Label>
-          <Input
-            type="file"
-            id="image"
-            name="image"
-            required={product == null}
-          />
-          {error.image && <div className="text-destructive">{error.image}</div>}
-        </div>
+        <AddImage
+          productImages={productImages}
+          setProductImages={setProductImages}
+        />
+      )}
+      {formError?.serverError && (
+        <div className="text-destructive">{formError.serverError}</div>
       )}
       <SubmitButton />
     </form>

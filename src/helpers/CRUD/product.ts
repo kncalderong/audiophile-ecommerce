@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { DeviceType, Product } from "@prisma/client";
+import { DeviceType, Product, ProductImage } from "@prisma/client";
 import { PostgrestError } from "@supabase/supabase-js";
 
 export const deleteProduct = async (id: string) => {
@@ -26,7 +26,7 @@ export const getProductById = async ({
   resultColumns = "*",
 }: {
   id: string;
-  resultColumns: string;
+  resultColumns?: string;
 }): Promise<Product | null> => {
   const supabase = await createClient();
   const { data, error } = (await supabase
@@ -41,16 +41,39 @@ export const getProductById = async ({
   return data?.[0] || null;
 };
 
+export const getImageById = async ({
+  id,
+  resultColumns = "*",
+}: {
+  id: string;
+  resultColumns?: string;
+}): Promise<ProductImage | null> => {
+  const supabase = await createClient();
+  const {
+    data,
+    error,
+  }: { data: ProductImage | null; error: PostgrestError | null } =
+    await supabase
+      .from("ProductImage")
+      .select(resultColumns)
+      .eq("id", id)
+      .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data || null;
+};
+
 export const createProduct = async (data: {
   [key: string]: unknown;
 }): Promise<Product | null> => {
   const supabase = await createClient();
   const { data: newProduct, error } = await supabase
     .from("Product")
-    .insert([data]);
+    .insert([data])
+    .select();
 
   if (error) throw new Error(error.message);
-  return newProduct;
+  return newProduct?.[0] || null;
 };
 
 export const getAllProducts = async ({
@@ -71,40 +94,29 @@ export const getAllProducts = async ({
   return data;
 };
 
-export const getNextImageOrder = async (productId: string) => {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("ProductImage")
-    .select("order")
-    .eq("product_id", productId)
-    .order("order", { ascending: false }) // Get highest order first
-    .limit(1);
-
-  if (error) throw new Error(error.message);
-
-  return data?.length ? data[0].order + 1 : 1; // If no images, start from 1
-};
-
 export const addProductImage = async (
   productId: string,
   file: File,
-  deviceType: DeviceType
+  deviceType: DeviceType,
+  order: number
 ) => {
   const supabase = await createClient();
-  const nextOrder = await getNextImageOrder(productId); // Auto-assign order
 
-  const { data, error } = await supabase.storage
+  const { data, error: storageError } = await supabase.storage
     .from("product-images")
-    .upload(`products/${productId}/${file.name}`, file);
+    .upload(`products/${productId}/${deviceType}/${file.name}`, file);
 
-  if (error) {
-    console.error("Upload error:", error);
-    return null;
+  if (storageError || !data) {
+    throw new Error(storageError.message || "Failed to upload image");
   }
 
-  const imageUrl = `https://${process.env.SUPABASE_URL}/storage/v1/object/public/product-images/${data.path}`;
+  const imageUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/product-images/${data.path}`;
 
-  await supabase
+  const { error } = await supabase
     .from("ProductImage")
-    .insert([{ productId, imageUrl, order: nextOrder, deviceType }]);
+    .insert([{ productId, imageUrl, order, deviceType }]);
+
+  if (error) {
+    throw new Error(error.message || "Failed to add product image");
+  }
 };
