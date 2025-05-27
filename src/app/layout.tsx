@@ -21,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${manrope.className} antialiased text-body`}>
+        <div id="parallel-modal-root" />
         <Providers>{children}</Providers>
       </body>
     </html>
