@@ -102,15 +102,7 @@ export const addProductImage = async (
 ) => {
   const supabase = await createClient();
 
-  const { data, error: storageError } = await supabase.storage
-    .from("product-images")
-    .upload(`products/${productId}/${deviceType}/${file.name}`, file);
-
-  if (storageError || !data) {
-    throw new Error(storageError.message || "Failed to upload image");
-  }
-
-  const imageUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/product-images/${data.path}`;
+  const imageUrl = await uploadImageToStorage(productId, deviceType, file);
 
   const { error } = await supabase
     .from("ProductImage")
@@ -119,4 +111,49 @@ export const addProductImage = async (
   if (error) {
     throw new Error(error.message || "Failed to add product image");
   }
+};
+
+export const editProductImage = async (
+  productId: string,
+  file: File,
+  imageId: string,
+  deviceType: DeviceType
+) => {
+  const supabase = await createClient();
+  const imageUrl = await uploadImageToStorage(
+    productId,
+    deviceType,
+    file,
+    true
+  );
+
+  const { error } = await supabase
+    .from("ProductImage")
+    .update({ imageUrl })
+    .match({ id: imageId });
+
+  if (error) throw new Error(error.message);
+};
+
+export const uploadImageToStorage = async (
+  productId: string,
+  deviceType: DeviceType,
+  file: File,
+  isEditing: boolean = false
+) => {
+  const supabase = await createClient();
+  const name = isEditing ? `${new Date().getTime()}-${file.name}` : file.name;
+  const { data, error: storageError } = await supabase.storage
+    .from("product-images")
+    .upload(`products/${productId}/${deviceType}/${name}`, file, {
+      upsert: true,
+    });
+
+  if (storageError || !data) {
+    throw new Error(storageError.message || "Failed to upload image");
+  }
+
+  const imageUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/product-images/${data.path}`;
+
+  return imageUrl;
 };
