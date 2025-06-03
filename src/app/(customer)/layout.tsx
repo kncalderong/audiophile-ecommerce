@@ -33,7 +33,7 @@ export default function Layout({
           <ShoppingCart className="w-6 h-6" />
         </button>
       </Nav>
-      <div className="container my-6">{children}</div>
+      <main>{children}</main>
     </>
   );
 }
