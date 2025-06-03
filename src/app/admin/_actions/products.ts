@@ -4,6 +4,7 @@ import {
   addProductImage,
   createProduct,
   deleteProduct,
+  editProductImage,
   updateProduct,
 } from "@/helpers/CRUD/product";
 import { ImageBlock } from "@/types/product";
@@ -134,4 +135,31 @@ export async function toggleProductAvailability(
   await updateProduct(id, { isAvailableForPurchase });
   revalidatePath("/");
   revalidatePath("/products");
+}
+
+export async function updateImage(
+  imageId: string,
+  productId: string,
+  deviceType: DeviceType,
+  prevState: unknown,
+  formData: FormData
+) {
+  const result = z
+    .object({
+      image: imageSchema.refine((file) => file.size > 0, "Required"),
+    })
+    .safeParse(Object.fromEntries(formData.entries()));
+
+  if (result.success === false) {
+    return { fieldErrors: result.error.formErrors.fieldErrors };
+  }
+  try {
+    await editProductImage(productId, result.data.image, imageId, deviceType);
+    revalidatePath(`/admin/products/${productId}/edit`);
+    revalidatePath("/admin/products");
+  } catch (error) {
+    console.error("Error updating product image:", error);
+    return { serverError: `An unexpected error occurred: ${error}` };
+  }
+  redirect(`/admin/products/${productId}/edit`);
 }

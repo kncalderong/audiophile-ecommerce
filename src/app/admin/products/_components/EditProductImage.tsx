@@ -1,6 +1,7 @@
 import { getImageById } from "@/helpers/CRUD/product";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { ImageForm } from "./ImageForm";
 
 export default async function EditProductImage({
   image_id,
@@ -12,8 +13,6 @@ export default async function EditProductImage({
   if (!imageData) {
     notFound();
   }
-
-  console.log("Image Data:", imageData);
 
   return (
     <section className="p-4 space-y-4 md:p-6 md:space-y-6 lg:p-0 lg:space-y-8">
@@ -31,9 +30,18 @@ export default async function EditProductImage({
               quality={80}
             />
           </div>
+          <div className="flex gap-2 items-center">
+            <p className="font-bold">Order: </p>
+            <p>{imageData.order}</p>
+          </div>
+          <div className="flex gap-2 items-center">
+            <p className="font-bold">Device Type: </p>
+            <p>{imageData.deviceType}</p>
+          </div>
         </div>
         <div className="space-y-4 w-full lg:w-1/2">
           <h6>New</h6>
+          <ImageForm productImage={imageData} />
         </div>
       </div>
     </section>
