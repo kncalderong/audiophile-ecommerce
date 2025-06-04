@@ -103,4 +103,7 @@ body {
   .subtitle {
     @apply text-subtitle font-semibold uppercase;
   }
+  .custom-box {
+    @apply w-10/12 mx-auto;
+  }
 }
