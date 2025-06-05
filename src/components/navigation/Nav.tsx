@@ -21,7 +21,7 @@ export function NavLink(props: Omit<ComponentProps<typeof Link>, "className">) {
     <Link
       {...props}
       className={cn(
-        "hover:text-store-orange-dark lg:p-4 uppercase text-[13px]",
+        "hover:text-store-orange-dark uppercase text-[13px]",
         pathname === props.href &&
           "text-store-orange-dark lg:text-primary-foreground"
       )}

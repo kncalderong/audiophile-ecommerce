@@ -1,5 +1,6 @@
 import Banner from "@/components/home/Banner";
 import Categories from "@/components/home/Categories";
+import Footer from "@/components/home/Footer";
 import HeroFooter from "@/components/home/HeroFooter";
 
 export default function Home() {
@@ -8,6 +9,7 @@ export default function Home() {
       <Banner />
       <Categories />
       <HeroFooter />
+      <Footer />
     </div>
   );
 }
