@@ -124,6 +124,7 @@ export function ProductForm({
           name="description"
           required
           defaultValue={product?.description}
+          rows={6}
         />
         {formError?.fieldErrors?.description && (
           <div className="text-destructive">
@@ -138,6 +139,22 @@ export function ProductForm({
           name="features"
           required
           defaultValue={product?.features}
+          rows={6}
+        />
+        {formError?.fieldErrors?.features && (
+          <div className="text-destructive">
+            {formError?.fieldErrors?.features}
+          </div>
+        )}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="description">Includes (JSON)</Label>
+        <Textarea
+          id="includes"
+          name="includes"
+          required
+          defaultValue={JSON.stringify(product?.includes)}
+          rows={6}
         />
         {formError?.fieldErrors?.features && (
           <div className="text-destructive">

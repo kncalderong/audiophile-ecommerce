@@ -24,6 +24,7 @@ const addSchema = z.object({
   features: z.string().min(1),
   priceInCents: z.coerce.number().int().min(1),
   category: z.string().min(1),
+  includes: z.string().min(1),
 });
 
 const imagesSchema = z.array(
@@ -66,6 +67,7 @@ export async function addProduct(
       slug,
       features: data.features,
       categoryId: data.category,
+      includes: JSON.parse(data.includes),
     });
 
     if (!newProduct) {
@@ -111,6 +113,7 @@ export async function updateProductAction(
       priceInCents: data.priceInCents,
       slug,
       features: data.features,
+      includes: JSON.parse(data.includes),
     });
 
     revalidatePath("/");
