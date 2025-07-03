@@ -18,8 +18,8 @@ export default function MainProducts() {
   return (
     <section className="w-full bg-white pb-28">
       <div className="container custom-box flex flex-col gap-8">
-        <div className="w-full rounded-lg bg-store-orange-dark text-store-gray-mid text-center flex flex-col gap-8 items-center px-8 py-16 overflow-hidden md:gap-12 md:py-20 lg:flex-row lg:gap-28 lg:px-28 lg:pb-0 lg:pt-28 lg:items-start">
-          <div className="w-3/5 aspect-[0.85] block relative mb-4 max-w-[200px] lg:h-auto lg:aspect-[0.8] lg:w-[540px] lg:max-w-none lg:-mb-2">
+        <div className="w-full rounded-lg bg-store-orange-dark text-store-gray-mid text-center flex flex-col gap-8 items-center px-8 py-16 overflow-hidden md:gap-12 md:py-20 lg:flex-row lg:gap-28 lg:px-28 lg:pb-0 lg:pt-28 lg:items-start ">
+          <div className="w-3/5 aspect-[0.85] block relative mb-4 max-w-[200px] lg:h-auto lg:aspect-[0.8] lg:w-[540px] lg:max-w-none lg:-mb-2 xl:w-[380px]">
             <div className="absolute top-1/2 left-1/2 border border-store-gray-mid rounded-full w-[185%] aspect-square -translate-x-1/2 -translate-y-1/2 opacity-40 z-0 md:w-[230%] lg:w-[125%]"></div>
             <div className="absolute top-1/2 left-1/2 border border-store-gray-mid rounded-full w-[210%] aspect-square -translate-x-1/2 -translate-y-1/2 opacity-40 z-0 md:w-[260%] lg:w-[110%]"></div>
             <div className="absolute top-1/2 left-1/2 border border-store-gray-mid rounded-full w-[360%] aspect-square -translate-x-1/2 -translate-y-1/2 opacity-40 z-0 md:w-[450%] lg:w-[200%]"></div>
