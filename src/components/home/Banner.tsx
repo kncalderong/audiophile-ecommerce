@@ -7,7 +7,7 @@ const bannerDesktop = "/home/desktop/image-hero.jpg";
 
 export default function Banner() {
   return (
-    <section className="w-full h-[calc(100vh-90px)] max-h-[510px] md:max-h-none">
+    <section className="w-full h-[calc(100vh-90px)] max-h-[510px] md:max-h-none bg-primary">
       <div className="w-full absolute left-0 top-0 z-0 block aspect-[0.625] md:aspect-square lg:aspect-auto lg:h-screen">
         <PictureComponent
           alt="Banner"

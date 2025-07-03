@@ -10,7 +10,7 @@ const CATEGORIES = {
 
 export default function Categories() {
   return (
-    <section className="w-full bg-white py-28 md:pt-36">
+    <section className="w-full bg-white py-14 mt-14 md:mt-16 md:pt-20">
       <div className="container custom-box grid grid-cols-1 gap-20 md:flex-row md:gap-2 md:grid-cols-3 lg:gap-8">
         {Object.entries(CATEGORIES).map(([key, value]) => (
           <Link
