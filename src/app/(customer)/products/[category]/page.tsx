@@ -23,6 +23,11 @@ export default async function CategoryPage({
 
   return (
     <div className="w-full">
+      <div className="bg-primary text-primary-foreground  relative">
+        <h4 className="container custom-box  flex px-4 py-8 items-center justify-center marker:uppercase font-medium md:py-16 lg:text-h2 lg:font-medium ">
+          {category}
+        </h4>
+      </div>
       {products.map((product, idx) => (
         <ProductItem
           key={product.id}
@@ -79,7 +84,7 @@ function ProductItem({
           {product.description}
         </p>
         <CustomButton variant="primary" size="md" className="w-[160px] mx-auto">
-          <Link href={`products/${category}/${product.id}`}>see product</Link>
+          <Link href={`/products/${category}/${product.id}`}>see product</Link>
         </CustomButton>
       </div>
     </section>
