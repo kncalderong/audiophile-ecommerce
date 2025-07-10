@@ -20,7 +20,6 @@ export default function Gallery({ product }: { product: ProductWithImages }) {
     block[img.deviceType as "MOBILE" | "TABLET" | "DESKTOP"] = img.imageUrl;
   });
   collatedImages.sort((a, b) => a.order - b.order);
-  console.log("collatedImages", collatedImages);
   return (
     <div className="container custom-box my-28 lg:my-40">
       <div className="grid grid-cols-1 grid-rows-4 gap-4 md:grid-cols-5 md:grid-rows-2">
