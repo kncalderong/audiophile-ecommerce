@@ -94,6 +94,27 @@ export const getAllProducts = async ({
   return data;
 };
 
+export const getProductsByCategory = async ({
+  resultColumns = "*",
+  category,
+}: {
+  resultColumns?: string;
+  category: string;
+}): Promise<Product[]> => {
+  const supabase = await createClient();
+  const { data, error } = (await supabase
+    .from("Product")
+    .select(`${resultColumns}, Category!inner(name)`)
+    .eq("Category.name", category)) as {
+    data: Product[] | null;
+    error: PostgrestError | null;
+  };
+
+  if (error || !data)
+    throw new Error(error?.message || "Failed to fetch categories");
+  return data;
+};
+
 export const addProductImage = async (
   productId: string,
   file: File,
