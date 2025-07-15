@@ -28,7 +28,7 @@ export default function Categories() {
               />
             </div>
             <div className="flex flex-col gap-2 items-center">
-              <h6 className="uppercase">{key}</h6>
+              <h6 className="uppercase text-primary">{key}</h6>
               <CustomButton variant="outline">shop</CustomButton>
             </div>
           </Link>
