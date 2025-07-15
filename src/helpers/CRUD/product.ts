@@ -115,6 +115,34 @@ export const getProductsByCategory = async ({
   return data;
 };
 
+export const getSuggestedProducts = async ({
+  resultColumns = "*",
+  currentProductId,
+  length = 3,
+}: {
+  resultColumns?: string;
+  currentProductId: string;
+  length?: number;
+}): Promise<Product[]> => {
+  const supabase = await createClient();
+  const { data, error } = (await supabase
+    .from("Product")
+    .select(
+      `${resultColumns}, ProductImage!inner(imageUrl, order, deviceType, id)`
+    )
+    .neq("id", currentProductId)
+    .eq("ProductImage.deviceType", "MOBILE")
+    .limit(length)
+    .limit(1, { referencedTable: "ProductImage" })) as {
+    data: Product[] | null;
+    error: PostgrestError | null;
+  };
+
+  if (error || !data)
+    throw new Error(error?.message || "Failed to fetch categories");
+  return data;
+};
+
 export const addProductImage = async (
   productId: string,
   file: File,

@@ -3,6 +3,7 @@ import PictureComponent from "@/components/global/PictureComponent";
 import Categories from "@/components/home/Categories";
 import Footer from "@/components/home/Footer";
 import HeroFooter from "@/components/home/HeroFooter";
+import MayAlsoLike from "@/components/navigation/MayAlsoLike";
 import AddToCart from "@/components/product/AddToCart";
 import Gallery, { GallerySkeleton } from "@/components/product/Gallery";
 import { getProductById } from "@/helpers/CRUD/product";
@@ -100,6 +101,7 @@ export default async function ProductPage({
         </div>
       </div>
       {product ? <Gallery product={product} /> : <GallerySkeleton />}
+      {product && <MayAlsoLike productId={product.id} />}
       <Categories />
       <HeroFooter />
       <Footer />
